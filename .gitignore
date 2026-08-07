@@ -14,10 +14,6 @@ ember-frontend/node_modules/
 ember-frontend/.next/
 tests/node_modules/
 
-# SDK build artifacts (when the SDK is vendored locally during dev)
-phoenix-rise-sdk/rust/target/
-phoenix-sdk-docs/
-
 # ── Environment / secrets ────────────────────────────────────────────
 # Catch any local env file; only explicit *.env.example placeholders are tracked.
 .env
