@@ -50,3 +50,6 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 strip = true
 lto = "thin"
 codegen-units = 1
+
+[dev-dependencies]
+phoenix-rise-litesvm-test = "=0.3.4"

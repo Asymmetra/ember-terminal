@@ -33,6 +33,28 @@ There is no CI pipeline — run both locally before you commit:
 
 ## Testing
 
+Two independent layers. Prefer the offline one — it needs no wallet and no funds.
+
+### Offline: LiteSVM (no wallet required)
+
+```bash
+cd ember-backend
+export PHOENIX_MAINNET_BPF_PROGRAMS=1
+export PHOENIX_MAINNET_RPC_URL=<your RPC URL>
+cargo test --test litesvm_orders
+```
+
+Runs the real Phoenix programs inside an in-process SVM, seeded with the SDK's
+own fixture (BTC/ETH/SOL markets, funded actors). It exercises the same
+`PhoenixTxBuilder` path the `/api/tx/*` routes use, so ticket-construction and
+account-ordering regressions get caught without signing anything on mainnet.
+
+Programs come either from mainnet (above) or a local Phoenix checkout via
+`PHOENIX_REPO_ROOT`. **With neither set the tests skip rather than fail**, so
+`cargo test` is green on a fresh clone.
+
+### Online: mainnet E2E (wallet required)
+
 ```bash
 cd tests
 cp .env.example .env          # set RPC_URL
