@@ -195,7 +195,7 @@ fn build_base_snapshot(accounts: Vec<(String, i64)>) -> LeaderboardSnapshot {
         .into_iter()
         .map(|(a, (lots, subs))| (a, lots, subs))
         .collect();
-    ranked.sort_by(|a, b| b.1.cmp(&a.1));
+    ranked.sort_by_key(|t| std::cmp::Reverse(t.1));
 
     // Aggregate stats over the active set (account value > $1).
     let active: Vec<&(String, i64, u32)> = ranked.iter().filter(|t| t.1 > ACTIVE_MIN_LOTS).collect();

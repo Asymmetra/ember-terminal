@@ -2,18 +2,35 @@
 
 A high-performance perpetuals trading terminal for [Phoenix](https://phoenix.trade) on Solana. Built with a Rust/Axum backend and Next.js frontend, Ember brings a Bloomberg-grade trading experience to on-chain perpetual futures.
 
+### ▶ Try it live: **[ember.asymmetra.xyz](https://ember.asymmetra.xyz)**
+
+A public instance is deployed and running — no install, no setup, nothing to
+clone. Open it, connect Phantom, and trade. The frontend is hosted on
+**[Vercel](https://vercel.com)**; the backend runs as a container elsewhere
+(see [Deployment](#deployment)). It stays up, so you can come back to it any
+time as a live reference for what this code does.
+
 > **Who this repo is for:**
-> - **Traders / Phoenix users** — try the live app at the URL below. Connect Phantom, deposit USDC, trade. No setup needed.
+> - **Traders / Phoenix users** — just use the hosted app above. No setup needed.
 > - **Developers building on Phoenix** — Ember is a working reference implementation of the [Phoenix Rise SDK](https://docs.phoenix.trade/sdk/rise). The [Building on Phoenix](#building-on-phoenix) section indexes the canonical patterns this codebase demonstrates and documents the gotchas we hit along the way.
 > - **AI coding agents** — every integration pattern lives at a single file path. Read the [Pattern → File index](#pattern--file-index) and open the linked files directly; each is self-contained and heavily commented.
 
 ## Live Deployment
 
-- **Frontend**: https://ember.asymmetra.xyz
-- **Backend**: https://ember-api.asymmetra.xyz
-- **WebSocket**: wss://ember-api.asymmetra.xyz/ws
+This project is continuously deployed and free to use — you do not need to run
+anything locally to try it.
 
-Try it: open the frontend URL, click **IGNITE TERMINAL**, connect Phantom, deposit some USDC, place a trade. The whole flow runs against Solana mainnet — fees are real but small (sub-cent for limit orders).
+| | |
+|---|---|
+| **App** (hosted on Vercel) | https://ember.asymmetra.xyz |
+| **Backend API** | https://ember-api.asymmetra.xyz |
+| **WebSocket** | wss://ember-api.asymmetra.xyz/ws |
+
+Open the app, click **IGNITE TERMINAL**, connect Phantom, deposit some USDC, place a trade. The whole flow runs against Solana mainnet — fees are real but small (sub-cent for limit orders).
+
+The backend endpoints are public and unauthenticated for reads, so you can also
+point your own client at them while learning the API — try
+`curl https://ember-api.asymmetra.xyz/api/markets`.
 
 ## Markets
 
