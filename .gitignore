@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────────────
+# Ember Terminal — .gitignore
+# Treat anything NOT listed here as committable. When in doubt: ignore.
+# ─────────────────────────────────────────────────────────────────────
+
+# OS
+.DS_Store
+
+# Rust
+ember-backend/target/
+
+# Node
+ember-frontend/node_modules/
+ember-frontend/.next/
+tests/node_modules/
+
+# SDK build artifacts (when the SDK is vendored locally during dev)
+phoenix-rise-sdk/rust/target/
+phoenix-sdk-docs/
+
+# ── Environment / secrets ────────────────────────────────────────────
+# Catch any local env file; only explicit *.env.example placeholders are tracked.
+.env
+.env.*
+!.env.example
+
+# Vercel CLI link metadata (contains projectId/orgId tied to one owner)
+.vercel/
+
+# Solana RPC provider key patterns sometimes embedded in URLs
+*rpcpool.com*
+
+# ── Wallet keypairs — NEVER commit ───────────────────────────────────
+.keys/
+test-wallet.json
+*keypair.json
+
+# ── Operational state ────────────────────────────────────────────────
+# Not secret (Solana pubkeys are public), but personally identifies the
+# users of a given deployment. Regenerated at runtime; safe to ignore.
+known_traders.json
+**/known_traders.json
+
+# ── Debug / test artifacts ───────────────────────────────────────────
+phoenix-api-debug.md
+e2e-results.json
+/e2e-test.cjs
+/e2e-test.mjs
+.context/

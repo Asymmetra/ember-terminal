@@ -1,0 +1,52 @@
+# Deploy the backend on every push to main.
+#
+# This is the pattern for a host whose control plane is NOT reachable from the
+# public internet — a self-hosted PaaS behind a firewall, for example. Because
+# the platform cannot receive a webhook, CI opens an SSH connection and triggers
+# the deploy from the host itself, over loopback.
+#
+# The deploy key should be command-restricted in the host's `authorized_keys`,
+# pinned to a single wrapper script that validates its one argument:
+#
+#   command="/usr/local/bin/deploy",no-pty,no-port-forwarding ssh-ed25519 AAAA...
+#
+# A key restricted that way cannot open a shell if it leaks — it can only ask
+# for a redeploy of one application.
+#
+# Required repository secrets:
+#   DEPLOY_SSH_KEY   private key whose public half is command-restricted above
+#   DEPLOY_HOST      hostname or IP of the container host
+#   DEPLOY_APP_UUID  application identifier passed to the wrapper script
+#
+# If your host accepts ordinary webhooks, you do not need any of this — point it
+# at the repo and delete this workflow.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false     # never abort a half-finished deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger deployment
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          UUID: ${{ secrets.DEPLOY_APP_UUID }}
+        run: |
+          set -euo pipefail
+          test -n "$KEY" && test -n "$HOST" && test -n "$UUID"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 \
+              "root@$HOST" "deploy $UUID"

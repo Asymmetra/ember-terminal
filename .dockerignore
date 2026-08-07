@@ -1,0 +1,8 @@
+ember-frontend/
+ember-backend/target/
+.git/
+.DS_Store
+*.md
+render.yaml
+.gitignore
+.dockerignore

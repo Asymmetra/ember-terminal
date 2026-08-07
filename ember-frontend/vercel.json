@@ -1,0 +1,46 @@
+{
+  "headers": [
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ember-api.asymmetra.xyz wss://ember-api.asymmetra.xyz https://api.mainnet-beta.solana.com wss://api.mainnet-beta.solana.com https://*.mainnet.rpcpool.com wss://*.mainnet.rpcpool.com https://solana.publicnode.com wss://solana.publicnode.com https://*.helius-rpc.com wss://*.helius-rpc.com https://perp-api.phoenix.trade wss://perp-api.phoenix.trade https://hermes.pyth.network; img-src 'self' data: blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; worker-src 'self' blob:"
+        }
+      ]
+    }
+  ]
+}
