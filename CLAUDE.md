@@ -83,8 +83,12 @@ Transaction builders — all return unsigned instructions under `/api/tx/`:
 Data endpoints:
 
 - `/api/markets`, `/api/markets/{symbol}`
+- `/api/markets/{symbol}/calendar`, `/api/markets/{symbol}/calendar/next` — RWA session hours
+- `/api/markets/{symbol}/funding` — market-wide funding rate history
 - `/api/orderbook/{symbol}`, `/api/candles/{symbol}`, `/api/trades/{symbol}/recent`
 - `/api/trader/{pubkey}` — plus `/orders`, `/trades`, `/subaccounts`, `/funding`, `/pnl`, `/collateral-history`
+- `/api/user/{pubkey}/pnl`, `/liquidations`, `/trades`, `/funding-hourly` — wallet-wide,
+  aggregated across every subaccount (vs `/api/trader/*`, which is per-subaccount)
 - `/api/view/margin`, `/api/view/liquidation-price`, `/api/view/bbo/{symbol}`
 - `/api/flight/config`, `/api/flight/builder/{pubkey}`
 - `/api/leaderboard`, `/api/onboard/*`

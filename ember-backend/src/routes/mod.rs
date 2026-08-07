@@ -12,6 +12,7 @@ pub mod orderbook;
 pub mod trade;
 pub mod trader;
 pub mod trades;
+pub mod user;
 pub mod view;
 
 pub fn api_router() -> Router<Arc<AppState>> {
@@ -26,4 +27,5 @@ pub fn api_router() -> Router<Arc<AppState>> {
         .nest("/flight", flight::router())
         .nest("/leaderboard", leaderboard::router())
         .nest("/view", view::router())
+        .nest("/user", user::router())
 }
