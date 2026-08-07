@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use base64::Engine as _;
-use phoenix_rise::{PhoenixHttpClient, PhoenixHttpError};
+use phoenix_rise::api::{PhoenixHttpClient, PhoenixHttpError};
 use serde::Deserialize;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;

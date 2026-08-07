@@ -25,7 +25,7 @@ use solana_pubkey::Pubkey;
 use std::str::FromStr;
 
 use phoenix_rise::ix::flight::get_flight_builder_state_address;
-use phoenix_rise::{PhoenixFlightClient, TraderKey};
+use phoenix_rise::api::{PhoenixFlightClient, TraderKey};
 
 /// Byte offset of `fee_bps` (u64 LE) within the Flight builder-state account.
 /// Layout (216 bytes): disc(8) · authority(32) · trader_account(32) · u64(8) ·
@@ -82,7 +82,7 @@ impl FlightConfig {
     /// isn't registered (or the RPC check failed — fail-safe so live orders are
     /// never wrapped against a missing builder).
     pub async fn registered_fee_bps(&self, rpc_url: &str) -> Option<u64> {
-        let state_pda = get_flight_builder_state_address(&self.builder_authority);
+        let state_pda = get_flight_builder_state_address(&self.builder_authority).ok()?;
         let data = get_account_data(rpc_url, &state_pda).await?;
         parse_builder_fee_bps(&data)
     }
@@ -123,10 +123,12 @@ pub struct BuilderStatus {
 /// Read a wallet's builder-code setup directly from chain.
 pub async fn builder_status(rpc_url: &str, authority: &Pubkey) -> BuilderStatus {
     let trader_account = TraderKey::derive_pda(authority, 0, 0);
-    let state_pda = get_flight_builder_state_address(authority);
-    let fee_bps = get_account_data(rpc_url, &state_pda)
-        .await
-        .and_then(|d| parse_builder_fee_bps(&d));
+    let fee_bps = match get_flight_builder_state_address(authority) {
+        Ok(state_pda) => get_account_data(rpc_url, &state_pda)
+            .await
+            .and_then(|d| parse_builder_fee_bps(&d)),
+        Err(_) => None,
+    };
     BuilderStatus {
         builder_authority: authority.to_string(),
         builder_trader_account: trader_account.to_string(),

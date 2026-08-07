@@ -1,12 +1,15 @@
 use axum::extract::State;
 use axum::routing::post;
 use axum::{Json, Router};
-use phoenix_rise::math::{Ticks, WrapperNum};
-use phoenix_rise::{
-    get_conditional_orders_address, BracketLeg, BracketLegOrders, CancelId, Direction,
-    IsolatedCollateralFlow, LimitOrderTicket, MarketOrderTicket, PhoenixHawkeyeClient,
-    PhoenixMetadata, PhoenixTxBuilder, Side, TraderKey,
+use phoenix_rise::math::Ticks;
+use phoenix_rise::api::{PhoenixMetadata, TraderKey};
+use phoenix_rise::core::{
+    BracketLeg, BracketLegOrders, LimitOrderTicket, MarketOrderTicket, PhoenixHawkeyeClient,
+    PhoenixTxBuilder,
 };
+use phoenix_rise::ix::constants::get_conditional_orders_address;
+use phoenix_rise::ix::types::{CancelId, Direction, IsolatedCollateralFlow};
+use phoenix_rise::math::direction::Side;
 use serde::{Deserialize, Deserializer, de};
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -1526,7 +1529,8 @@ async fn set_position_sltp(
     // `conditional_orders` account. It's created lazily on first use — if it
     // doesn't exist yet the place ix fails with InvalidAccountData, so we
     // prepend the create instruction when the account is absent.
-    let cond_addr = get_conditional_orders_address(&trader_pda);
+    let cond_addr = get_conditional_orders_address(&trader_pda)
+        .map_err(|e| AppError::Phoenix(format!("conditional_orders address: {e}")))?;
     let rpc_url = std::env::var("SOLANA_RPC_URL")
         .unwrap_or_else(|_| "https://api.mainnet.solana.com".to_string());
     if crate::services::flight::get_account_data(&rpc_url, &cond_addr)

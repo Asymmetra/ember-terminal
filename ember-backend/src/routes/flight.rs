@@ -8,7 +8,7 @@ use axum::{Json, Router};
 use phoenix_rise::ix::flight::{
     create_register_builder_ix, create_update_fee_ix, RegisterBuilderParams, UpdateFeeParams,
 };
-use phoenix_rise::TraderKey;
+use phoenix_rise::api::TraderKey;
 use serde::{Deserialize, Serialize};
 use solana_pubkey::Pubkey;
 use std::str::FromStr;

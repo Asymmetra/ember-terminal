@@ -14,7 +14,7 @@
 //! already used for `/v1/invite/check` in `routes/onboarding.rs`. This
 //! preserves the previous one-call-per-authority behavior exactly.
 
-use phoenix_rise::{TraderStateResponse, TraderView};
+use phoenix_rise::types::trader_http::{TraderStateResponse, TraderView};
 use solana_pubkey::Pubkey;
 
 fn perp_api_url() -> String {

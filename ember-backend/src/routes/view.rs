@@ -21,7 +21,7 @@ use axum::extract::{Path, Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
 use phoenix_rise::math::Ticks;
-use phoenix_rise::PhoenixHawkeyeClient;
+use phoenix_rise::core::PhoenixHawkeyeClient;
 use serde::Deserialize;
 use solana_pubkey::Pubkey;
 

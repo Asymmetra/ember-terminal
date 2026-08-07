@@ -3,7 +3,7 @@ use dashmap::DashSet;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use phoenix_rise::{ExchangeMarketConfig, PhoenixClient, PhoenixHttpClient, PhoenixMetadata};
+use phoenix_rise::api::{ExchangeMarketConfig, PhoenixClient, PhoenixHttpClient, PhoenixMetadata};
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
 

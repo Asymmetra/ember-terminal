@@ -34,8 +34,8 @@ pub struct MarketInfo {
     pub isolated_only: bool,
 }
 
-impl From<&phoenix_rise::ExchangeMarketConfig> for MarketInfo {
-    fn from(m: &phoenix_rise::ExchangeMarketConfig) -> Self {
+impl From<&phoenix_rise::api::ExchangeMarketConfig> for MarketInfo {
+    fn from(m: &phoenix_rise::api::ExchangeMarketConfig) -> Self {
         Self {
             symbol: m.symbol.clone(),
             asset_id: m.asset_id,

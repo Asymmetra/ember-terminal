@@ -1,10 +1,11 @@
 use axum::extract::{Path, Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
-use phoenix_rise::{
+use phoenix_rise::types::trader_http::{
     CollateralHistoryQueryParams, FundingHistoryQueryParams, OrderHistoryQueryParams,
-    PnlQueryParams, PnlResolution, TradeHistoryQueryParams,
+    PnlQueryParams, PnlResolution,
 };
+use phoenix_rise::types::trades::TradeHistoryQueryParams;
 use serde::Deserialize;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;

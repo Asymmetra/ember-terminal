@@ -2,7 +2,7 @@ use axum::extract::{Path, Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
 use dashmap::DashMap;
-use phoenix_rise::{CandlesQueryParams, Timeframe};
+use phoenix_rise::types::candles::{CandlesQueryParams, Timeframe};
 use serde::Deserialize;
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};

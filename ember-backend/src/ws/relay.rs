@@ -1,9 +1,10 @@
 use crate::phoenix::types::{OrderbookLevel, WsServerMessage};
 use crate::services::broadcast::BroadcastHub;
 use crate::services::market_cache::MarketCache;
-use phoenix_rise::{
-    PhoenixClient, PhoenixClientEvent, PhoenixSubscription, SubscriptionKey, Timeframe,
+use phoenix_rise::api::{
+    PhoenixClient, PhoenixClientEvent, PhoenixSubscription, SubscriptionKey,
 };
+use phoenix_rise::types::candles::Timeframe;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use std::sync::Arc;

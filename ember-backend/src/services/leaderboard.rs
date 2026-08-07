@@ -33,8 +33,9 @@
 //! per-request.
 
 use base64::Engine;
-use phoenix_rise::accounts::ACCOUNT_DISCRIMINANTS;
-use phoenix_rise::{PhoenixHttpClient, PnlQueryParams, PnlResolution};
+use phoenix_rise::accounts::PhoenixAccount;
+use phoenix_rise::api::PhoenixHttpClient;
+use phoenix_rise::types::trader_http::{PnlQueryParams, PnlResolution};
 use serde::Serialize;
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
@@ -392,7 +393,7 @@ fn json_num(v: &serde_json::Value) -> Option<f64> {
 /// as a whole, so trying several endpoints makes a transient outage on any one
 /// (or a redeploy with an empty cache) far less likely to blank the board.
 async fn fetch_trader_accounts(rpc_urls: &[String]) -> anyhow::Result<Vec<(String, i64)>> {
-    let disc_b64 = base64::engine::general_purpose::STANDARD.encode(ACCOUNT_DISCRIMINANTS.trader);
+    let disc_b64 = base64::engine::general_purpose::STANDARD.encode(PhoenixAccount::Trader.discriminant());
     let body = serde_json::json!({
         "jsonrpc": "2.0", "id": 1, "method": "getProgramAccounts",
         "params": [ PHOENIX_PROGRAM_ID, {
