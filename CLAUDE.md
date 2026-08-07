@@ -16,7 +16,7 @@ Conventions for working in this repo. Applies to humans and coding agents alike.
 
 ## Build & Verification Gates
 
-Both are enforced by CI (`.github/workflows/ci.yml`) and must pass locally first:
+There is no CI pipeline — run both locally before you commit:
 
 1. **Frontend** — `cd ember-frontend && npx tsc --noEmit && npm run lint`
 2. **Backend** — `cd ember-backend && cargo clippy -- -D warnings && cargo test`

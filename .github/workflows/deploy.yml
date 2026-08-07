@@ -43,7 +43,14 @@ jobs:
           UUID: ${{ secrets.DEPLOY_APP_UUID }}
         run: |
           set -euo pipefail
-          test -n "$KEY" && test -n "$HOST" && test -n "$UUID"
+          # No deploy secrets configured — this is a fork, or the host hasn't been
+          # wired up yet. Skip rather than fail: a red X here would be noise, not
+          # a signal that anything is broken.
+          if [ -z "$KEY" ] || [ -z "$HOST" ] || [ -z "$UUID" ]; then
+            echo "Deploy secrets not configured (DEPLOY_SSH_KEY / DEPLOY_HOST / DEPLOY_APP_UUID)."
+            echo "Skipping deploy."
+            exit 0
+          fi
           install -m 700 -d ~/.ssh
           printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519

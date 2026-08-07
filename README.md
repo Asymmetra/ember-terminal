@@ -310,7 +310,6 @@ ember-terminal/
 │   └── lib/harness.mjs         # build → sign → simulate → (optionally) send + confirm
 │
 ├── .github/workflows/
-│   ├── ci.yml                  # clippy + cargo test + tsc + lint + build
 │   └── deploy.yml              # Example: push to main → SSH-triggered container deploy
 ├── Dockerfile                  # Multi-stage Rust build for production
 └── .gitignore
