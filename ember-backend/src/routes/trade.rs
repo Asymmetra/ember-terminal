@@ -10,6 +10,9 @@ use phoenix_rise::core::{
 use phoenix_rise::ix::constants::get_conditional_orders_address;
 use phoenix_rise::ix::types::{CancelId, Direction, IsolatedCollateralFlow};
 use phoenix_rise::math::direction::Side;
+use phoenix_rise::types::ix::{
+    ConditionalTriggerRequest, PlaceAttachedConditionalOrderRequest,
+};
 use serde::{Deserialize, Deserializer, de};
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -1573,6 +1576,140 @@ async fn set_position_sltp(
 // Router
 // ---------------------------------------------------------------------------
 
+/// Request for `POST /api/tx/attached-conditional-order`.
+///
+/// `side` is the side of the **parent** limit order, not of the trigger legs —
+/// the trigger side is always the opposite, since TP/SL close the position the
+/// parent would open.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttachedConditionalOrderRequest {
+    pub authority: String,
+    pub symbol: String,
+    /// Sequence number of the resting limit order to attach to.
+    pub order_sequence_number: String,
+    /// Parent order's price, in ticks.
+    pub order_price_in_ticks: u64,
+    /// Side of the parent order: bid/buy/long or ask/sell/short.
+    pub side: String,
+    #[serde(default)]
+    pub take_profit_price: Option<f64>,
+    #[serde(default)]
+    pub stop_loss_price: Option<f64>,
+    #[serde(default)]
+    pub subaccount_index: Option<u8>,
+    #[serde(default)]
+    pub is_isolated: bool,
+    /// Slippage allowance for the trigger legs' execution price, in basis
+    /// points. Defaults to the same value market orders use.
+    #[serde(default)]
+    pub max_slippage_bps: Option<u16>,
+}
+
+/// POST /api/tx/attached-conditional-order
+///
+/// Attaches take-profit / stop-loss legs to an *already resting* limit order.
+///
+/// This is different from `/set-position-sltp`, which attaches triggers to an
+/// open **position**. Attached conditionals bind to the parent order: their
+/// fillable size tracks the parent's fills, and cancelling the parent cancels
+/// them too. That's the behaviour you want for "place a limit entry with a
+/// bracket already armed" — there is no position yet to attach to.
+///
+/// Phoenix models the legs as directional triggers rather than TP/SL, so the
+/// mapping depends on the parent side:
+///
+/// - long parent (bid): TP fires above (greater), SL fires below (less)
+/// - short parent (ask): TP fires below (less), SL fires above (greater)
+///
+/// Getting that backwards silently arms a stop where the take-profit should be,
+/// which is why it's done here once rather than left to each caller.
+async fn attached_conditional_order(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<AttachedConditionalOrderRequest>,
+) -> Result<Json<TxResponse>, AppError> {
+    let _authority = parse_authority(&req.authority)?;
+    let side = parse_side(&req.side)?;
+
+    if req.take_profit_price.is_none() && req.stop_loss_price.is_none() {
+        return Err(AppError::BadRequest(
+            "at least one of takeProfitPrice or stopLossPrice is required".to_string(),
+        ));
+    }
+    for (label, price) in [
+        ("takeProfitPrice", req.take_profit_price),
+        ("stopLossPrice", req.stop_loss_price),
+    ] {
+        if let Some(p) = price {
+            validate_price(p)
+                .map_err(|_| AppError::BadRequest(format!("{label} must be positive and finite")))?;
+        }
+    }
+
+    // Trigger legs close the parent, so they take the opposite side.
+    let trigger_side = match side {
+        Side::Bid => "ask",
+        Side::Ask => "bid",
+    };
+    // `ioc` is the market-like kind here: Phoenix accepts only `limit` or `ioc`
+    // for a conditional leg, and a TP/SL should take whatever liquidity exists
+    // the moment it triggers rather than rest on the book.
+    //
+    // An IOC leg still needs an execution price — the worst price it will accept
+    // once triggered. Derive it from the trigger with a slippage allowance in
+    // the direction that helps the leg fill: a sell accepts lower, a buy accepts
+    // higher. Setting execution == trigger would routinely fail to fill, because
+    // the price has usually moved past the trigger by the time it fires.
+    let slippage_bps = req.max_slippage_bps.unwrap_or(DEFAULT_SLIPPAGE_BPS);
+    let slip = slippage_bps as f64 / 10_000.0;
+    let leg = |price: f64| ConditionalTriggerRequest {
+        side: trigger_side.to_string(),
+        order_kind: Some("ioc".to_string()),
+        trigger_price: Some(price),
+        trigger_price_in_ticks: None,
+        execution_price: Some(match side {
+            Side::Bid => price * (1.0 - slip), // closing a long → we sell
+            Side::Ask => price * (1.0 + slip), // closing a short → we buy
+        }),
+        execution_price_in_ticks: None,
+    };
+
+    // Long: TP above / SL below. Short: the reverse.
+    let (greater_trigger, less_trigger) = match side {
+        Side::Bid => (req.take_profit_price.map(leg), req.stop_loss_price.map(leg)),
+        Side::Ask => (req.stop_loss_price.map(leg), req.take_profit_price.map(leg)),
+    };
+
+    let request = PlaceAttachedConditionalOrderRequest {
+        authority: req.authority.clone(),
+        position_authority: None,
+        trader_pda_index: 0,
+        trader_subaccount_index: req.subaccount_index,
+        is_isolated: req.is_isolated,
+        symbol: req.symbol.clone(),
+        fee_payer: None,
+        order_sequence_number: req.order_sequence_number.clone(),
+        order_price_in_ticks: req.order_price_in_ticks,
+        greater_trigger,
+        less_trigger,
+        flight_builder_authority: None,
+        flight_fee_collector_trader: None,
+    };
+
+    let instructions = state
+        .http_client
+        .place_attached_conditional_order(request)
+        .await
+        .map_err(|e| {
+            AppError::Phoenix(format!("Failed to build attached conditional order: {}", e))
+        })?;
+
+    Ok(Json(serialize_instructions(
+        instructions,
+        format!("Attached conditional order(s) for {}", req.symbol),
+    )))
+}
+
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         // Cross-margin
@@ -1593,4 +1730,5 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/place-multi-limit-orders", post(place_multi_limit_orders))
         .route("/cancel-stop-loss", post(cancel_stop_loss))
         .route("/set-position-sltp", post(set_position_sltp))
+        .route("/attached-conditional-order", post(attached_conditional_order))
 }

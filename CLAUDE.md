@@ -76,6 +76,7 @@ Transaction builders — all return unsigned instructions under `/api/tx/`:
 | `isolated-market-order` | `isolated-limit-order` |
 | `place-multi-limit-orders` | `cancel-orders` |
 | `set-position-sltp` | `cancel-stop-loss` |
+| `attached-conditional-order` | |
 | `close-all-positions` | `register-subaccount` |
 | `deposit` | `withdraw` |
 | `transfer-collateral` | |
